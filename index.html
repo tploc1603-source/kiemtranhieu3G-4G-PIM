@@ -500,6 +500,65 @@
                 </div>
             </div>
 
+            <!-- Sổ Đo Đa Điểm (Multi-point Measurement Log) -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between border-b pb-3 gap-2">
+                    <div>
+                        <h3 class="text-md font-bold text-telecom-900 flex items-center space-x-2">
+                            <span>📋</span>
+                            <span>Sổ Đo Đa Điểm & Thống Kê % Đạt Chuẩn QĐ 61/QĐ-D01</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Ghi lại từng điểm đo (tầng/vị trí) từ bộ số liệu TEMS Pocket phía trên để tự động tính tỷ lệ % mẫu đạt chuẩn — đúng phương pháp nghiệm thu SAT yêu cầu &ge; 98% tổng số mẫu, thay vì chỉ đối chiếu 1 điểm đo đơn lẻ.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+                    <div class="flex-grow">
+                        <label for="log-location" class="block text-xs font-bold text-slate-700">Tầng / Vị trí đo:</label>
+                        <input type="text" id="log-location" placeholder="VD: Tầng 15 - Hành lang Đông" class="w-full mt-1 p-2 border border-slate-300 rounded text-sm" onkeydown="if(event.key==='Enter'){addMeasurementPoint();}">
+                    </div>
+                    <button onclick="addMeasurementPoint()" class="px-4 py-2 bg-telecom-600 text-white text-sm font-semibold rounded-lg hover:bg-telecom-700 shadow-sm whitespace-nowrap">
+                        ➕ Thêm Điểm Đo Từ Ô Nhập Trên
+                    </button>
+                    <button onclick="exportMeasurementLogCSV()" class="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 shadow-sm whitespace-nowrap">
+                        ⬇️ Xuất CSV
+                    </button>
+                    <button onclick="clearMeasurementLog()" class="px-4 py-2 bg-rose-50 text-rose-700 border border-rose-300 text-sm font-semibold rounded-lg hover:bg-rose-100 whitespace-nowrap">
+                        🗑️ Xóa Toàn Bộ
+                    </button>
+                </div>
+
+                <!-- Compliance Summary -->
+                <div id="log-summary-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center text-xs">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Log Table -->
+                <div class="overflow-x-auto custom-scrollbar border border-slate-200 rounded-lg">
+                    <table class="w-full text-xs text-left">
+                        <thead class="bg-slate-100 text-slate-600 uppercase">
+                            <tr>
+                                <th class="p-2 border-r">#</th>
+                                <th class="p-2 border-r">Vị Trí</th>
+                                <th class="p-2 border-r text-center">4G RSRP</th>
+                                <th class="p-2 border-r text-center">4G RSRQ</th>
+                                <th class="p-2 border-r text-center">4G SINR</th>
+                                <th class="p-2 border-r text-center">3G RTWP</th>
+                                <th class="p-2 border-r text-center">3G RSCP</th>
+                                <th class="p-2 border-r text-center">3G Ec/No</th>
+                                <th class="p-2 border-r text-center">4G Đạt QĐ61</th>
+                                <th class="p-2 border-r text-center">3G Đạt QĐ61</th>
+                                <th class="p-2 text-center">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                    <p id="log-empty-state" class="text-center text-slate-400 text-xs py-4">Chưa có điểm đo nào. Nhập số liệu ở bảng TEMS Pocket phía trên, đặt tên vị trí rồi bấm "Thêm Điểm Đo".</p>
+                </div>
+            </div>
+
             <!-- Simulator & PIM Explanation Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Tool 1: Dynamic Throughput Simulator Chart -->
@@ -1144,6 +1203,200 @@
             `;
         }
 
+        // ==================== SỔ ĐO ĐA ĐIỂM (MULTI-POINT MEASUREMENT LOG) ====================
+        const LOG_STORAGE_KEY = 'tems_ibs_measurement_log_v1';
+        let measurementLog = [];
+
+        function loadMeasurementLog() {
+            try {
+                const saved = localStorage.getItem(LOG_STORAGE_KEY);
+                measurementLog = saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                console.error('Không thể đọc sổ đo từ localStorage:', e);
+                measurementLog = [];
+            }
+            renderMeasurementLog();
+        }
+
+        function saveMeasurementLog() {
+            try {
+                localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(measurementLog));
+            } catch (e) {
+                console.error('Không thể lưu sổ đo vào localStorage:', e);
+            }
+        }
+
+        function addMeasurementPoint() {
+            const locationInput = document.getElementById('log-location');
+            const location = locationInput.value.trim();
+            if (!location) {
+                alert('Vui lòng nhập Tầng / Vị trí đo trước khi thêm điểm đo.');
+                locationInput.focus();
+                return;
+            }
+
+            const rsrp = parseFloat(document.getElementById('tems-rsrp').value);
+            const rssi = parseFloat(document.getElementById('tems-rssi').value);
+            const rsrq = parseFloat(document.getElementById('tems-rsrq').value);
+            const sinr = parseFloat(document.getElementById('tems-sinr').value);
+            const rtwp = parseFloat(document.getElementById('tems-rtwp').value);
+            const rscp = parseFloat(document.getElementById('tems-rscp').value);
+            const ecno = parseFloat(document.getElementById('tems-ecno').value);
+
+            if ([rsrp, rssi, rsrq, sinr, rtwp, rscp, ecno].some(v => isNaN(v))) {
+                alert('Một số ô nhập số liệu TEMS Pocket đang trống hoặc không hợp lệ. Vui lòng kiểm tra lại trước khi thêm.');
+                return;
+            }
+
+            const rsrpPass = rsrp >= -105;
+            const rsrqPass = rsrq >= -12;
+            const rtwpPass = rtwp <= -95;
+            const rscpPass = rscp >= -95;
+            const ecnoPass = ecno >= -12;
+
+            measurementLog.push({
+                id: Date.now() + Math.random(),
+                location, rsrp, rssi, rsrq, sinr, rtwp, rscp, ecno,
+                rsrpPass, rsrqPass, rtwpPass, rscpPass, ecnoPass,
+                is4gPass: rsrpPass && rsrqPass,
+                is3gPass: rtwpPass && rscpPass && ecnoPass,
+                timestamp: new Date().toISOString()
+            });
+
+            saveMeasurementLog();
+            renderMeasurementLog();
+            locationInput.value = '';
+            locationInput.focus();
+        }
+
+        function deleteMeasurementPoint(id) {
+            measurementLog = measurementLog.filter(item => item.id !== id);
+            saveMeasurementLog();
+            renderMeasurementLog();
+        }
+
+        function clearMeasurementLog() {
+            if (measurementLog.length === 0) return;
+            if (confirm('Xóa toàn bộ ' + measurementLog.length + ' điểm đo đã lưu? Hành động này không thể hoàn tác.')) {
+                measurementLog = [];
+                saveMeasurementLog();
+                renderMeasurementLog();
+            }
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function renderMeasurementLog() {
+            const tbody = document.getElementById('log-table-body');
+            const emptyState = document.getElementById('log-empty-state');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (measurementLog.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                measurementLog.forEach((item, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-t border-slate-100 hover:bg-slate-50';
+                    tr.innerHTML = `
+                        <td class="p-2 border-r font-mono text-slate-500">${idx + 1}</td>
+                        <td class="p-2 border-r font-medium text-slate-800">${escapeHtml(item.location)}</td>
+                        <td class="p-2 border-r text-center font-mono ${item.rsrpPass ? 'text-emerald-700' : 'text-rose-600 font-bold'}">${item.rsrp}</td>
+                        <td class="p-2 border-r text-center font-mono ${item.rsrqPass ? 'text-emerald-700' : 'text-rose-600 font-bold'}">${item.rsrq}</td>
+                        <td class="p-2 border-r text-center font-mono text-slate-700">${item.sinr}</td>
+                        <td class="p-2 border-r text-center font-mono ${item.rtwpPass ? 'text-emerald-700' : 'text-rose-600 font-bold'}">${item.rtwp}</td>
+                        <td class="p-2 border-r text-center font-mono ${item.rscpPass ? 'text-emerald-700' : 'text-rose-600 font-bold'}">${item.rscp}</td>
+                        <td class="p-2 border-r text-center font-mono ${item.ecnoPass ? 'text-emerald-700' : 'text-rose-600 font-bold'}">${item.ecno}</td>
+                        <td class="p-2 border-r text-center">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.is4gPass ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${item.is4gPass ? 'ĐẠT' : 'KHÔNG ĐẠT'}</span>
+                        </td>
+                        <td class="p-2 border-r text-center">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.is3gPass ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${item.is3gPass ? 'ĐẠT' : 'KHÔNG ĐẠT'}</span>
+                        </td>
+                        <td class="p-2 text-center">
+                            <button onclick="deleteMeasurementPoint(${item.id})" class="text-rose-500 hover:text-rose-700 font-bold" title="Xóa điểm đo này">✕</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            renderComplianceSummary();
+        }
+
+        function renderComplianceSummary() {
+            const container = document.getElementById('log-summary-container');
+            if (!container) return;
+            const total = measurementLog.length;
+
+            if (total === 0) {
+                container.innerHTML = `<div class="col-span-full text-slate-400 text-xs py-2">Thống kê % đạt chuẩn theo QĐ 61 sẽ hiển thị tại đây sau khi có điểm đo.</div>`;
+                return;
+            }
+
+            const metrics = [
+                { key: 'rsrpPass', label: '4G RSRP ≥ -105 dBm' },
+                { key: 'rsrqPass', label: '4G RSRQ ≥ -12 dB' },
+                { key: 'rtwpPass', label: '3G RTWP ≤ -95 dBm' },
+                { key: 'rscpPass', label: '3G RSCP ≥ -95 dBm' },
+                { key: 'ecnoPass', label: '3G Ec/No ≥ -12 dB' }
+            ];
+
+            const cardsHtml = metrics.map(m => {
+                const passCount = measurementLog.filter(item => item[m.key]).length;
+                const pct = (passCount / total * 100);
+                const isCompliant = pct >= 98;
+                return `
+                    <div class="p-3 rounded-lg border ${isCompliant ? 'border-emerald-200 bg-emerald-50' : 'border-rose-300 bg-rose-50'}">
+                        <div class="text-[10px] text-slate-500 font-semibold">${m.label}</div>
+                        <div class="text-lg font-bold ${isCompliant ? 'text-emerald-700' : 'text-rose-600'}">${pct.toFixed(1)}%</div>
+                        <div class="text-[10px] text-slate-500">${passCount}/${total} mẫu ${isCompliant ? '(Đạt ≥98%)' : '(CHƯA ĐẠT 98%)'}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = cardsHtml + `
+                <div class="p-3 rounded-lg border border-telecom-200 bg-telecom-50 flex flex-col justify-center">
+                    <div class="text-[10px] text-slate-500 font-semibold">Tổng Số Mẫu Đã Ghi</div>
+                    <div class="text-lg font-bold text-telecom-700">${total}</div>
+                </div>
+            `;
+        }
+
+        function exportMeasurementLogCSV() {
+            if (measurementLog.length === 0) {
+                alert('Chưa có dữ liệu để xuất. Vui lòng thêm ít nhất 1 điểm đo.');
+                return;
+            }
+
+            const headers = ['STT', 'Vi Tri', 'RSRP(dBm)', 'RSSI(dBm)', 'RSRQ(dB)', 'SINR(dB)', 'RTWP(dBm)', 'RSCP(dBm)', 'EcNo(dB)', '4G Dat QD61', '3G Dat QD61', 'Thoi Gian'];
+            const rows = measurementLog.map((item, idx) => [
+                idx + 1,
+                `"${item.location.replace(/"/g, '""')}"`,
+                item.rsrp, item.rssi, item.rsrq, item.sinr, item.rtwp, item.rscp, item.ecno,
+                item.is4gPass ? 'DAT' : 'KHONG DAT',
+                item.is3gPass ? 'DAT' : 'KHONG DAT',
+                new Date(item.timestamp).toLocaleString('vi-VN')
+            ].join(','));
+
+            const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const dateStr = new Date().toISOString().slice(0, 10);
+            link.download = `So_Do_IBS_${dateStr}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
         // TEMS Interference calculation
         function calculateTemsInterference() {
             const rsrp = parseFloat(document.getElementById('tems-rsrp').value) || -85;
@@ -1276,6 +1529,7 @@
             switchStandardTab('4g');
             calculatePIM();
             calculateTemsInterference();
+            loadMeasurementLog();
         });
     </script>
 </body>
