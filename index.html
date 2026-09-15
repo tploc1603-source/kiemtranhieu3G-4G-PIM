@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cẩm Nang TEMS Pocket & Trung Tâm Chẩn Đoán Tối Ưu Mạng IBS By LocTalent 2026 (QĐ 61/QĐ-D01 MobiFone 2026)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        telecom: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0a3651',
+                        },
+                        accent: {
+                            gold: '#d97706',
+                            emerald: '#059669',
+                            rose: '#e11d48',
+                            purple: '#7c3aed'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        .tab-btn.active {
+            border-bottom-color: #0284c7;
+            color: #0284c7;
+            font-weight: 700;
+            background-color: #f0f7ff;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Chosen Palette: Warm Telecom Slate & Indigo Accent -->
+    <!-- Application Structure Plan:
+        Ứng dụng được thiết kế theo cấu trúc Tab chuyên sâu giúp kỹ sư viễn thông dễ dàng tra cứu, học tập và xử lý lỗi tại hiện trường:
+        1. Top Bar & Context Header: Định danh hệ thống, thông tin nhà mạng (MobiFone / IBS Ibuilding 3 nhà mạng - Cập nhật QĐ 61/QĐ-D01 15/01/2026).
+        2. Main Navigation Tabs:
+           - Tab 1: Hướng Dẫn Tính Năng TEMS Pocket UI (Idle, Dedicated, Control Locks, Pinpointing, Scripting Engine).
+           - Tab 2: Cẩm Nang Bắt Bệnh Vô Tuyến (Ma trận phân tích sự cố: Lỗ lõm sóng, Nhiễu giao thoa, Handover Ping-pong, Nhiễu RTWP/PIM, CQI/MCS).
+           - Tab 3: Quy Trình IBS Ibuilding & Bảng Tiêu Chuẩn Kỹ Thuật Mới MobiFone (QĐ 61/QĐ-D01 - 3G/4G/5G, Anten, Phòng Máy).
+           - Tab 4: Công Cụ Mô Phỏng & Bảng Chẩn Đoán Nhiễu 3G UL & 4G từ TEMS Pocket (Calculator tính nhiễu PIM IM3, RTWP Noise Rise 3G, Bóc tách công suất nhiễu 4G I+N từ RSRP/RSSI/RSRQ/SINR, Biểu đồ tương quan SINR vs Throughput & Hướng dẫn tra cứu chỉ số Mức tăng nhiễu PIM/Nhiễu nền).
+         WHY THIS STRUCTURE: Cập nhật trực tiếp Bộ tiêu chuẩn kỹ thuật IBC mới nhất (QĐ 61/QĐ-D01 ban hành 15/01/2026) và bổ sung hướng dẫn thực hành tra cứu PIM Noise Rise cho kỹ sư đo kiểm thực địa.
+    -->
+    <!-- Visualization & Content Choices:
+        1. Feature Accordion / Interactive Guides (HTML/JS) -> Tra cứu thao tác TEMS Pocket nhanh.
+        2. Diagnostic Matrix Filter (JS) -> Lọc sự cố theo triệu chứng thực tế.
+        3. Interactive Technical Standards Table (JS Tab Toggle) -> Hiển thị bảng chỉ tiêu chuẩn 3G/4G/5G/Công suất dưới Anten/Phòng máy theo QĐ 61/QĐ-D01.
+        4. Interactive Chart (Chart.js Canvas) -> Mô phỏng mối quan hệ RSRP - SINR - Throughput 4G LTE.
+        5. Interactive TEMS Interference Calculator & PIM Guide Modal (Vanilla JS) -> Công cụ cho phép nhập giá trị trực tiếp từ TEMS Pocket (RSRP, RSSI, RSRQ, SINR, 3G RTWP) để bóc tách tổng công suất nhiễu, độ dâng nhiễu 3G UL và đối soát tự động theo QĐ 61/QĐ-D01.
+        Confirming NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Header Section -->
+    <header class="bg-telecom-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-2 md:mb-0">
+                <span class="text-3xl">📡</span>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white">TEMS Pocket Master UI & Telecom Optimization Hub By LocTalent 2026</h1>
+                    <p class="text-xs text-sky-200">Cẩm Nang Vận Hành & Bảng Tiêu Chuẩn Kỹ Thuật IBC Mới (QĐ 61/QĐ-D01 ngày 15/01/2026 MobiFone)</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3 text-xs bg-telecom-800 px-3 py-1.5 rounded-lg border border-telecom-700">
+                <div class="flex items-center space-x-1">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="font-medium text-slate-200">Chuẩn: <strong class="text-amber-300">QĐ 61/QĐ-D01 (15/01/2026)</strong></span>
+                </div>
+                <span class="text-slate-500">|</span>
+                <span class="text-slate-200">Mạng test: <strong class="text-sky-300">MobiFone (Hạ tầng 3 Nhà Mạng)</strong></span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-telecom-800 border-t border-telecom-700">
+            <div class="max-w-7xl mx-auto px-4 flex space-x-1 overflow-x-auto custom-scrollbar">
+                <button onclick="switchTab('features')" id="tab-features" class="tab-btn active px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-300 hover:text-white transition-colors flex items-center space-x-2 whitespace-nowrap">
+                    <span>📱</span> <span>Tính Năng TEMS Pocket UI</span>
+                </button>
+                <button onclick="switchTab('diagnostics')" id="tab-diagnostics" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-300 hover:text-white transition-colors flex items-center space-x-2 whitespace-nowrap">
+                    <span>🔍</span> <span>Cẩm Nang Bắt Bệnh Vô Tuyến</span>
+                </button>
+                <button onclick="switchTab('ibuilding')" id="tab-ibuilding" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-300 hover:text-white transition-colors flex items-center space-x-2 whitespace-nowrap">
+                    <span>🏢</span> <span>Quy Trình & Tiêu Chuẩn IBC (QĐ 61/2026)</span>
+                </button>
+                <button onclick="switchTab('tools')" id="tab-tools" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-300 hover:text-white transition-colors flex items-center space-x-2 whitespace-nowrap">
+                    <span>📊</span> <span>Mô Phỏng & Kiểm Tra Nhiễu 3G/4G/PIM</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ==================== TAB 1: TÍNH NĂNG PHẦN MỀM TEMS POCKET ==================== -->
+        <section id="content-features" class="space-y-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-telecom-900 flex items-center space-x-2">
+                    <span>📱</span>
+                    <span>Hướng Dẫn Thao Tác Chi Tiết Từng Nhóm Tính Năng Trên Giao Diện TEMS Pocket</span>
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">
+                    Phần này hướng dẫn chi tiết từng bước vận hành ứng dụng TEMS Pocket trên thiết bị đầu cuối di động (UE). Người dùng có thể tìm hiểu cách thức chuyển đổi các chế độ đo lường, làm chủ bộ lệnh cưỡng ép vô tuyến (Control Functions), số hóa bản vẽ & đánh dấu tọa độ (Pinpointing), cùng kỹ thuật lập kịch bản kiểm thử tự động (Scripting Engine) phục vụ đo kiểm thực địa.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column: Feature Navigation Buttons -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-2">
+                    <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-3">Danh Mục Tính Năng UI</h3>
+                    
+                    <button onclick="showFeatureDetail('mode-idle-ded')" id="feat-btn-mode-idle-ded" class="feat-nav-btn w-full text-left p-3 rounded-lg border border-telecom-50 bg-telecom-50/50 hover:bg-telecom-50 transition font-medium text-sm text-telecom-900 flex justify-between items-center">
+                        <span class="flex items-center space-x-2"><span>📊</span> <span>Chế Độ Idle, Dedicated & Scanning</span></span>
+                        <span class="text-xs bg-telecom-100 text-telecom-700 px-2 py-0.5 rounded">Giao diện</span>
+                    </button>
+
+                    <button onclick="showFeatureDetail('control-functions')" id="feat-btn-control-functions" class="feat-nav-btn w-full text-left p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition font-medium text-sm text-slate-700 flex justify-between items-center">
+                        <span class="flex items-center space-x-2"><span>🔒</span> <span>Bộ Lệnh Khóa Mạng (Control Functions)</span></span>
+                        <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded">Cốt lõi</span>
+                    </button>
+
+                    <button onclick="showFeatureDetail('indoor-pinpoint')" id="feat-btn-indoor-pinpoint" class="feat-nav-btn w-full text-left p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition font-medium text-sm text-slate-700 flex justify-between items-center">
+                        <span class="flex items-center space-x-2"><span>📍</span> <span>Đánh Dấu Bản Đồ Indoor (Pinpointing)</span></span>
+                        <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">Khảo sát</span>
+                    </button>
+
+                    <button onclick="showFeatureDetail('scripting-engine')" id="feat-btn-scripting-engine" class="feat-nav-btn w-full text-left p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition font-medium text-sm text-slate-700 flex justify-between items-center">
+                        <span class="flex items-center space-x-2"><span>⚙️</span> <span>Tự Động Hóa Kịch Bản (Scripting Engine)</span></span>
+                        <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">Tự động</span>
+                    </button>
+
+                    <button onclick="showFeatureDetail('session-export')" id="feat-btn-session-export" class="feat-nav-btn w-full text-left p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition font-medium text-sm text-slate-700 flex justify-between items-center">
+                        <span class="flex items-center space-x-2"><span>💾</span> <span>Quản Lý Phiên & Xuất File Log (.trp)</span></span>
+                        <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Dữ liệu</span>
+                    </button>
+                </div>
+
+                <!-- Right 2 Columns: Detailed Step-by-Step Guide Panel -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200 min-h-[450px]" id="feature-detail-panel">
+                    <!-- Dynamic Content populated by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: CẨM NANG BẮT BỆNH VÔ TUYẾN ==================== -->
+        <section id="content-diagnostics" class="space-y-6 hidden">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-telecom-900 flex items-center space-x-2">
+                    <span>🔍</span>
+                    <span>Ma Trận Bắt Bệnh & Khoanh Vùng Sự Cố Mạng Vô Tuyến 2G/3G/4G/5G</span>
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">
+                    Phần này cung cấp phương pháp luận chẩn đoán lỗi dựa trên các thông số lớp vật lý (RSRP, RSRQ, SINR, CQI, RTWP, RxQuality) và các hiện tượng bất thường thực tế. Người dùng có thể sử dụng bộ lọc sự cố bên dưới để xem ngay nguyên nhân gốc rễ (Root Cause Analysis), cách kiểm tra trên TEMS Pocket/Discovery và phương án xử lý hiệu chỉnh tối ưu.
+                </p>
+            </div>
+
+            <!-- Symptom Filter Buttons -->
+            <div class="flex flex-wrap gap-2 bg-white p-3 rounded-xl border border-slate-200">
+                <span class="text-xs font-bold text-slate-400 uppercase py-1.5 px-2">Lọc Theo Hiện Tượng:</span>
+                <button onclick="filterDiagnostics('all')" class="diag-filter-btn active px-3 py-1 text-xs font-semibold rounded-lg bg-telecom-600 text-white shadow-sm">Tất Cả Lỗi</button>
+                <button onclick="filterDiagnostics('coverage')" class="diag-filter-btn px-3 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">⚠️ Lỗ Lõm Sóng (Low RSRP)</button>
+                <button onclick="filterDiagnostics('interference')" class="diag-filter-btn px-3 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">⚡ Nhiễu Giao Thoa (Pilot Pollution)</button>
+                <button onclick="filterDiagnostics('handover')" class="diag-filter-btn px-3 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">🔄 Ping-pong Handover</button>
+                <button onclick="filterDiagnostics('rtwp')" class="diag-filter-btn px-3 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">📈 Nhiễu Đường Lên RTWP / PIM</button>
+                <button onclick="filterDiagnostics('throughput')" class="diag-filter-btn px-3 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">📉 Tốc Độ Tải Thấp (CQI/MCS Drop)</button>
+            </div>
+
+            <!-- Diagnostics Cards Container -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="diagnostics-cards-container">
+                <!-- Dynamic cards populated by JS -->
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: QUY TRÌNH & BẢNG TIÊU CHUẨN IBC (QĐ 61/QĐ-D01) ==================== -->
+        <section id="content-ibuilding" class="space-y-6 hidden">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 mb-2">
+                    <h2 class="text-lg font-bold text-telecom-900 flex items-center space-x-2">
+                        <span>🏢</span>
+                        <span>Quy Trình IBC & Bảng Tiêu Chuẩn Kỹ Thuật MobiFone (Quyết Định 61/QĐ-D01)</span>
+                    </h2>
+                    <span class="mt-2 sm:mt-0 px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-300">
+                        📜 Ban hành ngày 15/01/2026
+                    </span>
+                </div>
+                <p class="text-sm text-slate-600 mt-1">
+                    Cập nhật toàn bộ **Bảng tiêu chuẩn kỹ thuật IBC mới nhất** ban hành kèm theo Quyết định số **61/QĐ-D01** ngày 15/01/2026 của Tổng công ty Viễn thông MobiFone. Các chỉ tiêu này bắt buộc áp dụng khi thẩm định thiết kế, phát sóng thử nghiệm (03 tháng) và nghiệm thu đưa hệ thống phủ sóng trong tòa nhà (IBS/DAS) vào vận hành.
+                </p>
+            </div>
+
+            <!-- IBS Key Threshold Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-semibold">Chỉ Tiêu 4G LTE RSRP (Mới)</span>
+                    <div class="text-xl font-bold text-emerald-600 mt-1">&ge; -105 dBm</div>
+                    <span class="text-[10px] text-slate-500">Đạt &gt; 98% số mẫu đo</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-semibold">Chỉ Tiêu 4G LTE RSRQ (Mới)</span>
+                    <div class="text-xl font-bold text-telecom-600 mt-1">&ge; -12 dB</div>
+                    <span class="text-[10px] text-slate-500">Đạt &gt; 98% số mẫu đo</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-semibold">Nhiễu Uplink Tối Đa Trạm</span>
+                    <div class="text-xl font-bold text-purple-600 mt-1">&le; -95 dBm</div>
+                    <span class="text-[10px] text-slate-500">Áp dụng cả 3G, 4G, 5G</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-semibold">Mức Thu Sóng Ngoại Vị (Outdoor)</span>
+                    <div class="text-xl font-bold text-rose-600 mt-1">&le; -105 dBm</div>
+                    <span class="text-[10px] text-slate-500">Tránh nhiễu lọt sóng 4G</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Technical Standard Reference Table -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between border-b pb-3 gap-2">
+                    <div>
+                        <h3 class="text-md font-bold text-telecom-900 flex items-center space-x-2">
+                            <span>📜</span>
+                            <span>Bảng Chi Tiết Tiêu Chuẩn Kỹ Thuật Trạm IBC (Trích Mục IV - QĐ 61/QĐ-D01)</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Tra cứu nhanh các chỉ tiêu bắt buộc đối với hệ thống 3G, 4G, 5G, công suất anten và hạ tầng phòng máy</p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-1 bg-slate-100 p-1 rounded-lg text-xs">
+                        <button onclick="switchStandardTab('4g')" id="std-tab-4g" class="std-tab-btn active px-3 py-1.5 rounded-md font-semibold bg-telecom-600 text-white shadow-sm">4G LTE</button>
+                        <button onclick="switchStandardTab('5g')" id="std-tab-5g" class="std-tab-btn px-3 py-1.5 rounded-md font-semibold text-slate-700 hover:bg-slate-200">5G NR</button>
+                        <button onclick="switchStandardTab('3g')" id="std-tab-3g" class="std-tab-btn px-3 py-1.5 rounded-md font-semibold text-slate-700 hover:bg-slate-200">3G WCDMA</button>
+                        <button onclick="switchStandardTab('antenna')" id="std-tab-antenna" class="std-tab-btn px-3 py-1.5 rounded-md font-semibold text-slate-700 hover:bg-slate-200">Công Suất Anten</button>
+                        <button onclick="switchStandardTab('infra')" id="std-tab-infra" class="std-tab-btn px-3 py-1.5 rounded-md font-semibold text-slate-700 hover:bg-slate-200">Hạ Tầng Phòng Máy</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-xs text-left border-collapse border border-slate-200" id="standard-table">
+                        <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-3 border-r border-slate-200 w-12 text-center">STT</th>
+                                <th class="p-3 border-r border-slate-200">Chỉ Tiêu Kỹ Thuật / Yêu Cầu</th>
+                                <th class="p-3 border-r border-slate-200 w-44">Ngưỡng Chuẩn (QĐ 61/QĐ-D01)</th>
+                                <th class="p-3 border-r border-slate-200 w-36">Phương Pháp Kiểm Tra</th>
+                                <th class="p-3">Ghi Chú Nghiệm Thu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standard-table-body" class="divide-y divide-slate-200 bg-white">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Workflow Steps -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+                <h3 class="text-md font-bold text-slate-800 border-b pb-2 flex items-center justify-between">
+                    <span>📋 Quy Trình Thực Thi Đo Khảo Sát & Nghiệm Thu IBC Tòa Nhà</span>
+                    <span class="text-xs font-normal text-slate-500">Tick chọn để hoàn tất các bước thực địa</span>
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-4 p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <input type="checkbox" id="chk-step-1" class="mt-1 h-5 w-5 text-telecom-600 rounded border-slate-300 focus:ring-telecom-500">
+                        <div class="flex-1">
+                            <label for="chk-step-1" class="font-bold text-slate-800 text-sm cursor-pointer">Bước 1: Chuẩn bị Cấu hình Điện thoại & Khóa Mạng (MobiFone 4G)</label>
+                            <p class="text-xs text-slate-600 mt-1">
+                                • Lắp SIM MobiFone. Truy cập TEMS Pocket -> <strong>ACTIONS -> Control Function -> RAT Lock</strong> -> Chọn <strong>LTE Only</strong>.<br>
+                                • Chọn <strong>Band Lock</strong> -> Khóa vào <strong>Band 3 (1800 MHz)</strong> hoặc <strong>Band 1 (2100 MHz)</strong>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-4 p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <input type="checkbox" id="chk-step-2" class="mt-1 h-5 w-5 text-telecom-600 rounded border-slate-300 focus:ring-telecom-500">
+                        <div class="flex-1">
+                            <label for="chk-step-2" class="font-bold text-slate-800 text-sm cursor-pointer">Bước 2: Nạp Bản Đồ & Tạo Phiên Đo Logfile (Pocket Session)</label>
+                            <p class="text-xs text-slate-600 mt-1">
+                                • Vào <strong>Action Map Set -> Load Map</strong> -> Chọn ảnh sơ đồ mặt bằng tầng.<br>
+                                • Vào <strong>Other -> Pocket Session</strong> -> Đặt tên chuẩn: <code class="bg-slate-200 px-1 py-0.5 rounded text-slate-800 font-mono text-[11px]">MobiFone_4G_Ibuilding_Floor[X]_V01</code>.<br>
+                                • Bật nút <strong>Start Logfile Recording</strong>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-4 p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <input type="checkbox" id="chk-step-3" class="mt-1 h-5 w-5 text-telecom-600 rounded border-slate-300 focus:ring-telecom-500">
+                        <div class="flex-1">
+                            <label for="chk-step-3" class="font-bold text-slate-800 text-sm cursor-pointer">Bước 3: Thiết Lập Kịch Bản Tải Dữ Liệu Tự Động (Scripts)</label>
+                            <p class="text-xs text-slate-600 mt-1">
+                                • Vào <strong>Create/Modify -> Scripts</strong> -> Tạo kịch bản FTP Download với nhiều luồng song song (Parallel FTP).
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-4 p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <input type="checkbox" id="chk-step-4" class="mt-1 h-5 w-5 text-telecom-600 rounded border-slate-300 focus:ring-telecom-500">
+                        <div class="flex-1">
+                            <label for="chk-step-4" class="font-bold text-slate-800 text-sm cursor-pointer">Bước 4: Thực Hiện Đo Đi Bộ Indoor (Pinpointing) & Xử Lý Điểm Dừng</label>
+                            <p class="text-xs text-slate-600 mt-1">
+                                • Nhấn <strong>Start Pinpoint</strong> -> Bấm <strong>Start Script</strong>. Đi bộ dọc các hành lang, phòng làm việc.<br>
+                                • Chạm vào màn hình <strong>Add Pinpoint</strong> tại các góc rẽ.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-4 p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <input type="checkbox" id="chk-step-5" class="mt-1 h-5 w-5 text-telecom-600 rounded border-slate-300 focus:ring-telecom-500">
+                        <div class="flex-1">
+                            <label for="chk-step-5" class="font-bold text-slate-800 text-sm cursor-pointer">Bước 5: Phát Sóng Thử Nghiệm 03 Tháng & Xuất File Log Nghiệm Thu (QĐ 61/QĐ-D01)</label>
+                            <p class="text-xs text-slate-600 mt-1">
+                                • Đơn vị duy trì phát sóng thử nghiệm 03 tháng theo Mục 3.2 QĐ 61/QĐ-D01.<br>
+                                • Export file <code class="text-telecom-600 font-mono">.trp</code> vào TEMS Discovery để xuất báo cáo nghiệm thu SAT.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 4: MÔ PHỎNG & TÍNH TOÁN (ĐÃ BỔ SUNG HƯỚNG DẪN XÁC ĐỊNH PIM NOISE RISE) ==================== -->
+        <section id="content-tools" class="space-y-6 hidden">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-telecom-900 flex items-center space-x-2">
+                    <span>📊</span>
+                    <span>Bộ Công Cụ Kiểm Tra Nhiễu 3G UL & 4G Trực Tiếp Từ TEMS Pocket (Theo QĐ 61/QĐ-D01)</span>
+                </h2>
+                <p class="text-sm text-slate-600 mt-1">
+                    Công cụ cho phép kỹ sư nhập các tham số đo thực tế thu thập từ màn hình **TEMS Pocket** (RSRP, RSSI, RSRQ, SINR, Ec/No) và số liệu trạm đáy (RTWP 3G / PUSCH Noise 4G). Hệ thống tự động bóc tách **tổng công suất nhiễu ($I+N$)**, độ dâng nhiễu **Noise Rise ($\Delta$)**, và kiểm tra sự tuân thủ chuẩn **QĐ 61/QĐ-D01 ngày 15/01/2026**.
+                </p>
+            </div>
+
+            <!-- Direct TEMS Pocket Input & Diagnostics Tool -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between border-b pb-3 gap-2">
+                    <div>
+                        <h3 class="text-md font-bold text-telecom-900 flex items-center space-x-2">
+                            <span>📱</span>
+                            <span>Chẩn Đoán Trực Tiếp Tham Số TEMS Pocket & Đánh Giá Đạt Chuẩn QĐ 61/QĐ-D01</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Nhập thông số hiển thị từ TEMS Pocket ngoài hiện trường hoặc chọn nhanh mẫu dữ liệu đo thực tế</p>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs text-slate-500 font-semibold">Mẫu Đo:</span>
+                        <button onclick="loadTemsPreset('clean')" class="px-2.5 py-1 text-xs rounded border border-emerald-300 bg-emerald-50 text-emerald-800 font-medium hover:bg-emerald-100">Sóng Chuẩn IBS</button>
+                        <button onclick="loadTemsPreset('pilot')" class="px-2.5 py-1 text-xs rounded border border-amber-300 bg-amber-50 text-amber-800 font-medium hover:bg-amber-100">Nhiễu Lọt Sóng Macro</button>
+                        <button onclick="loadTemsPreset('pim')" class="px-2.5 py-1 text-xs rounded border border-rose-300 bg-rose-50 text-rose-800 font-medium hover:bg-rose-100">Nhiễu PIM 3G/4G UL</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label for="tems-rsrp" class="block text-xs font-bold text-slate-700">4G RSRP (dBm):</label>
+                        <input type="number" id="tems-rsrp" value="-85" step="1" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono text-sm" oninput="calculateTemsInterference()">
+                        <span class="text-[10px] text-slate-500">QĐ 61: &ge; -105 dBm (98% mẫu)</span>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label for="tems-rssi" class="block text-xs font-bold text-slate-700">4G RSSI (dBm):</label>
+                        <input type="number" id="tems-rssi" value="-62" step="1" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono text-sm" oninput="calculateTemsInterference()">
+                        <span class="text-[10px] text-slate-500">Tổng công suất nhận 20MHz</span>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label for="tems-rsrq" class="block text-xs font-bold text-slate-700">4G RSRQ (dB):</label>
+                        <input type="number" id="tems-rsrq" value="-9" step="0.5" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono text-sm" oninput="calculateTemsInterference()">
+                        <span class="text-[10px] text-slate-500">QĐ 61: &ge; -12 dB (98% mẫu)</span>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label for="tems-sinr" class="block text-xs font-bold text-slate-700">4G SINR (dB):</label>
+                        <input type="number" id="tems-sinr" value="18" step="1" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono text-sm" oninput="calculateTemsInterference()">
+                        <span class="text-[10px] text-slate-500">Càng cao Downlink càng nhanh</span>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label for="tems-rtwp" class="block text-xs font-bold text-slate-700">3G RTWP / UL Noise (dBm):</label>
+                        <input type="number" id="tems-rtwp" value="-102" step="1" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono text-sm" oninput="calculateTemsInterference()">
+                        <span class="text-[10px] text-rose-600 font-semibold">QĐ 61: &le; -95 dBm (Bắt buộc)</span>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label for="tems-rscp" class="block text-xs font-bold text-slate-700">3G CPICH RSCP (dBm):</label>
+                        <input type="number" id="tems-rscp" value="-78" step="1" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono text-sm" oninput="calculateTemsInterference()">
+                        <span class="text-[10px] text-slate-500">QĐ 61: &ge; -95 dBm</span>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label for="tems-ecno" class="block text-xs font-bold text-slate-700">3G Ec/No (dB):</label>
+                        <input type="number" id="tems-ecno" value="-6" step="0.5" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono text-sm" oninput="calculateTemsInterference()">
+                        <span class="text-[10px] text-slate-500">QĐ 61: &ge; -12 dB</span>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label for="tems-bw" class="block text-xs font-bold text-slate-700">Băng Thông LTE (BW):</label>
+                        <select id="tems-bw" class="w-full mt-1 p-2 border border-slate-300 rounded text-sm" onchange="calculateTemsInterference()">
+                            <option value="100">20 MHz (100 PRBs / 1200 SCs)</option>
+                            <option value="75">15 MHz (75 PRBs / 900 SCs)</option>
+                            <option value="50">10 MHz (50 PRBs / 600 SCs)</option>
+                        </select>
+                        <span class="text-[10px] text-slate-500">Cấu hình kênh MobiFone</span>
+                    </div>
+                </div>
+
+                <!-- Live Diagnostic Results Container -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 border-t pt-4">
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2 text-xs">
+                        <div class="flex justify-between items-center border-b pb-1 font-bold">
+                            <span class="text-telecom-900">⚡ Mức Nhiễu 4G DL ($I+N$)</span>
+                            <span id="res-4g-qd61-badge" class="px-2 py-0.5 rounded text-[10px]">--</span>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Nhiễu nền + Giao thoa ($I+N$):</span>
+                                <strong id="res-4g-noise-power" class="font-mono text-telecom-700">-103.0 dBm/SC</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Mức chênh lệch RSRP - Noise:</span>
+                                <strong id="res-4g-snr-calc" class="font-mono text-slate-800">18.0 dB</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Phân loại chất lượng Downlink:</span>
+                                <strong id="res-4g-quality" class="text-emerald-600 font-bold">Tuyệt vời (256-QAM)</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2 text-xs">
+                        <div class="flex justify-between items-center border-b pb-1 font-bold">
+                            <span class="text-purple-900">📈 Độ Dâng Nhiễu 3G UL (RTWP)</span>
+                            <span id="res-3g-qd61-badge" class="px-2 py-0.5 rounded text-[10px]">--</span>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Độ dâng nhiễu (Noise Rise $\Delta$):</span>
+                                <strong id="res-3g-noise-rise" class="font-mono text-purple-700">6.0 dB</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Tỷ lệ co hẹp vùng phủ (Cell Shrink):</span>
+                                <strong id="res-3g-shrinkage" class="font-mono text-rose-600">15.2%</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600">Tổn thất dung lượng UL:</span>
+                                <strong id="res-3g-capacity-loss" class="text-amber-700 font-bold">Bình thường (&lt; 20%)</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2 text-xs">
+                        <div class="flex justify-between items-center border-b pb-1 font-bold">
+                            <span class="text-slate-900">🛠️ Đánh Giá Gốc Rễ & Khuyến Nghị</span>
+                            <span class="text-[10px] text-slate-400">Tự động chẩn đoán</span>
+                        </div>
+                        <p id="res-diagnosis-text" class="text-slate-700 leading-relaxed font-medium">
+                            Chờ tính toán...
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulator & PIM Explanation Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Tool 1: Dynamic Throughput Simulator Chart -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="text-md font-bold text-slate-800 flex items-center space-x-2 border-b pb-2">
+                        <span>📉</span>
+                        <span>Mô Phỏng Tương Quan RSRP / SINR -> MCS -> Throughput 4G LTE</span>
+                    </h3>
+
+                    <!-- Interactive Controls for Simulator -->
+                    <div class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs">
+                        <div>
+                            <div class="flex justify-between font-semibold">
+                                <label for="input-rsrp">Cường Độ Tín Hiệu (RSRP):</label>
+                                <span id="val-rsrp" class="text-telecom-600 font-mono font-bold">-85 dBm</span>
+                            </div>
+                            <input type="range" id="input-rsrp" min="-120" max="-50" value="-85" class="w-full accent-telecom-600 mt-1" oninput="updateSimulation()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between font-semibold">
+                                <label for="input-sinr">Tỷ Số Tín Hiệu / Nhiễu (SINR):</label>
+                                <span id="val-sinr" class="text-telecom-600 font-mono font-bold">15 dB</span>
+                            </div>
+                            <input type="range" id="input-sinr" min="-10" max="30" value="15" class="w-full accent-telecom-600 mt-1" oninput="updateSimulation()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center font-semibold">
+                                <label for="input-pim-level" class="flex items-center space-x-1">
+                                    <span>Mức Tăng Nhiễu PIM / Nhiễu Nền ($\Delta$ Noise Rise):</span>
+                                    <button onclick="togglePimGuideModal()" class="text-[11px] bg-telecom-100 text-telecom-700 px-1.5 py-0.5 rounded hover:bg-telecom-200 font-normal">💡 Cách xem chỉ số này?</button>
+                                </label>
+                                <span id="val-pim-level" class="text-rose-600 font-mono font-bold">Thấp (Thường)</span>
+                            </div>
+                            <input type="range" id="input-pim-level" min="0" max="25" value="2" class="w-full accent-rose-600 mt-1" oninput="updateSimulation()">
+                        </div>
+                    </div>
+
+                    <!-- Calculated Simulator Outputs -->
+                    <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="bg-telecom-50 p-2 rounded border border-telecom-100">
+                            <span class="text-slate-500">Chỉ Số CQI</span>
+                            <div id="out-cqi" class="text-lg font-bold text-telecom-700 mt-0.5">12 / 15</div>
+                        </div>
+                        <div class="bg-telecom-50 p-2 rounded border border-telecom-100">
+                            <span class="text-slate-500">Điều Chế (MCS)</span>
+                            <div id="out-mcs" class="text-lg font-bold text-purple-700 mt-0.5">64-QAM</div>
+                        </div>
+                        <div class="bg-telecom-50 p-2 rounded border border-telecom-100">
+                            <span class="text-slate-500">Tốc Độ Ước Tính</span>
+                            <div id="out-tp" class="text-lg font-bold text-emerald-700 mt-0.5">65 Mbps</div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="chart-container">
+                        <canvas id="throughputChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tool 2: PIM IM3 & RTWP Noise Floor Calculator -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="text-md font-bold text-slate-800 flex items-center space-x-2 border-b pb-2">
+                        <span>⚡</span>
+                        <span>Công Cụ Tính Tần Số Sóng Hài PIM Bậc 3 (IM3) & Nhiễu RTWP</span>
+                    </h3>
+
+                    <p class="text-xs text-slate-600">
+                        Khi 2 sóng mang công suất cao truyền qua thành phần thụ động bị oxy hóa/lỏng lẻo trong hệ thống IBS, chúng sinh ra sản phẩm điều chế thụ động bậc 3 (IM3): 
+                        <code class="bg-slate-100 px-1 font-mono text-slate-800">F_IM3 = 2*F1 - F2</code> hoặc <code class="bg-slate-100 px-1 font-mono text-slate-800">2*F2 - F1</code>.
+                    </p>
+
+                    <div class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="pim-f1" class="font-bold text-slate-700">Tần số Sóng Mang 1 (F1 - MHz):</label>
+                                <input type="number" id="pim-f1" value="1815" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono" oninput="calculatePIM()">
+                            </div>
+                            <div>
+                                <label for="pim-f2" class="font-bold text-slate-700">Tần số Sóng Mang 2 (F2 - MHz):</label>
+                                <input type="number" id="pim-f2" value="1835" class="w-full mt-1 p-2 border border-slate-300 rounded font-mono" oninput="calculatePIM()">
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <label for="pim-ul-band" class="font-bold text-slate-700">Dải Tần Uplink Cần Kiểm Tra (MobiFone / LTE):</label>
+                            <select id="pim-ul-band" class="w-full mt-1 p-2 border border-slate-300 rounded" onchange="calculatePIM()">
+                                <option value="1710-1785">LTE Band 3 Uplink (1710 - 1785 MHz)</option>
+                                <option value="1920-1980">LTE/3G Band 1 Uplink (1920 - 1980 MHz)</option>
+                                <option value="880-915">2G/LTE Band 8 Uplink (880 - 915 MHz)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="pim-results-box" class="p-4 rounded-lg bg-amber-50 border border-amber-200 text-xs space-y-2">
+                        <!-- Dynamic JS Output -->
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs space-y-2">
+                        <h4 class="font-bold text-slate-800">📐 Lý Thuyết Nhiễu Nền RTWP Trạm Đáy (NodeB/eNodeB):</h4>
+                        <p class="text-slate-600">
+                            Công thức nền nhiễu nhiệt: <code class="font-mono bg-slate-200 px-1 text-slate-900">PN = k * T * B + NF</code><br>
+                            • Theo QĐ 61/QĐ-D01: Ngưỡng nhiễu Uplink trạm IBC phải luôn đạt <strong class="text-rose-600">&le; -95 dBm</strong> cho cả 3G, 4G, 5G.<br>
+                            • Nếu RTWP dâng vượt ngưỡng: Trạm bị "co hẹp vùng phủ" (Cell Breathing), ngắt kết nối đường lên và làm rớt cuộc gọi liên tục.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EMBEDDED GUIDE: HOW TO MEASURE & DETERMINE PIM NOISE RISE -->
+            <div id="pim-guide-modal" class="bg-slate-900 text-slate-100 p-6 rounded-xl border border-slate-700 shadow-xl space-y-4 text-xs">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                    <h3 class="text-sm font-bold text-amber-400 flex items-center space-x-2">
+                        <span>💡</span>
+                        <span>CẨM NANG HƯỚNG DẪN: CÁCH XEM & XÁC ĐỊNH CHỈ SỐ "MỨC TĂNG NHIỄU PIM / NHIỄU NỀN"</span>
+                    </h3>
+                    <span class="text-[11px] bg-slate-800 text-slate-400 px-2 py-1 rounded">Chuyên ngành Viễn Thông</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Method 1 -->
+                    <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 space-y-2">
+                        <h4 class="font-bold text-sky-300 text-xs">1. Xem trên OMC Trạm (NodeB / eNodeB):</h4>
+                        <p class="text-slate-300">
+                            • <strong>Mạng 3G (RTWP):</strong> Mức nhiễu nền chuẩn (không tải) là <strong>-108 dBm</strong>. Độ dâng nhiễu:
+                            <code class="block bg-slate-900 p-1.5 mt-1 text-emerald-300 font-mono text-[11px]">Noise Rise (dB) = RTWP_thực_tế - (-108 dBm)</code>
+                            <em>Ví dụ:</em> Nếu OMC báo RTWP = -98 dBm &rarr; Mức tăng nhiễu PIM = <strong>10 dB</strong>.
+                        </p>
+                        <p class="text-slate-400">
+                            • <strong>Mạng 4G LTE (PUSCH Noise Floor):</strong> Xem chỉ số nhiễu nền trên từng PRB (chuẩn ~ <strong>-120 dBm/PRB</strong>).
+                        </p>
+                    </div>
+
+                    <!-- Method 2 -->
+                    <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 space-y-2">
+                        <h4 class="font-bold text-amber-300 text-xs">2. Ước Tính Qua TEMS Pocket (Đo Thực Địa):</h4>
+                        <p class="text-slate-300">
+                            • Tính tổng công suất nhiễu giao thoa + nhiễu nền DL:
+                            <code class="block bg-slate-900 p-1.5 mt-1 text-emerald-300 font-mono text-[11px]">Power (I+N) = RSRP - SINR</code>
+                        </p>
+                        <p class="text-slate-400">
+                            • Khi bạn đứng ngay dưới anten IBS (RSRP rất mạnh &ge; -75 dBm, RSRQ tốt) nhưng khi bật tải dữ liệu nặng (FTP Test) thì <strong>SINR bị tụt giảm đột ngột từ 25 dB xuống 3 dB</strong>. Khoảng chênh lệch suy giảm SINR đó chính là do **sóng hài PIM bùng phát khi phát công suất lớn**.
+                        </p>
+                    </div>
+
+                    <!-- Method 3 -->
+                    <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 space-y-2">
+                        <h4 class="font-bold text-purple-300 text-xs">3. Đo Bằng Thiết Bị PIM Analyzer chuyên dụng:</h4>
+                        <p class="text-slate-300">
+                            • Sử dụng máy đo PIM Site Master (Kaelus, Anritsu) phát 2 luồng công suất <code class="text-amber-300 font-mono">2 x 20W (2 x 43 dBm)</code> vào trục DAS.
+                        </p>
+                        <p class="text-slate-400">
+                            • Máy sẽ đo trực tiếp biên độ sản phẩm **IM3 (dBm)**.
+                            <br>• Tiêu chuẩn QĐ 61/QĐ-D01 MobiFone yêu cầu giá trị PIM: <strong class="text-emerald-400">&le; -150 dBc</strong> (tương đương &le; -107 dBm).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-4 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-1">
+            <p>TEMS Pocket & Discovery Technical Master Guide — Chuyên Gia Tối Ưu Mạng Vô Tuyến Viễn Thông</p>
+            <p class="text-slate-500">Cập nhật theo Quyết định số 61/QĐ-D01 ngày 15/01/2026 của Tổng Công ty Viễn thông MobiFone về Triển khai hạ tầng và quản lý chất lượng IBC.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Tab switching
+        function switchTab(tabId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById('content-' + tabId).classList.remove('hidden');
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            if (tabId === 'tools') {
+                if(!throughputChartInstance) {
+                    initThroughputChart();
+                }
+                calculateTemsInterference();
+            }
+        }
+
+        // Feature details
+        const featureDetailsData = {
+            'mode-idle-ded': {
+                title: '📊 Chế Độ Idle Mode, Dedicated Mode & Scanning Mode',
+                badge: 'Giao diện hiển thị',
+                content: `
+                    <div class="space-y-4 text-xs text-slate-700">
+                        <p>TEMS Pocket phân tách việc thu thập dữ liệu giao diện không gian (air interface) thành 3 trạng thái hoạt động của thiết bị (UE):</p>
+                        
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                            <h4 class="font-bold text-telecom-700">1. Chế Độ Idle (Rảnh rỗi):</h4>
+                            <p class="mt-1">Khi điện thoại không thực hiện cuộc gọi hoặc truyền dữ liệu. Màn hình Idle cung cấp thông tin giải mã các khối thông tin hệ thống (System Information Blocks - SIBs), đo mức sóng ô phục vụ (Serving Cell) và các ô lân cận (Neighbor Cells) để phân tích thuật toán chọn lại ô (Cell Selection / Reselection).</p>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                            <h4 class="font-bold text-telecom-700">2. Chế Độ Dedicated (Kết nối):</h4>
+                            <p class="mt-1">Kích hoạt khi thiết bị đã thiết lập kết nối RRC (Radio Resource Control) thành công để thực hiện cuộc gọi hoặc tải dữ liệu. Cung cấp các phân tích chuyên sâu về cách eNodeB phân bổ tài nguyên (Resource Blocks), CQI, MCS, số luồng MIMO và tốc độ tải thực tế thời gian thực.</p>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                            <h4 class="font-bold text-telecom-700">3. Chế Độ Scanning (Quét phổ ngoại vi):</h4>
+                            <p class="mt-1">Kết nối TEMS Pocket qua Bluetooth/USB với máy quét chuyên dụng (như PCTEL IBFlex). Giúp kỹ sư phân tích toàn bộ phổ tần vô tuyến có sẵn trong không gian mà không bị giới hạn bởi thẻ SIM nhà mạng.</p>
+                        </div>
+                    </div>
+                `
+            },
+            'control-functions': {
+                title: '🔒 Bộ Lệnh Khóa Mạng Chi Tiết (Control Functions)',
+                badge: 'Cốt lõi chẩn đoán',
+                content: `
+                    <div class="space-y-4 text-xs text-slate-700">
+                        <p class="text-slate-600">Bộ lệnh Control Functions giao tiếp trực tiếp với vi xử lý Baseband (Qualcomm/Shannon) của điện thoại để ghi đè (override) thuật toán tự động của nhà mạng, cô lập sự cố:</p>
+
+                        <div class="border-l-4 border-telecom-500 pl-3 py-1 space-y-1">
+                            <h4 class="font-bold text-slate-800">1. RAT Lock (Khóa Công Nghệ Vô Tuyến):</h4>
+                            <p><strong>Thao tác:</strong> Menu -> ACTIONS -> Control Function -> RAT Lock -> Chọn [2G Only / 3G Only / LTE Only] -> Apply.</p>
+                            <p class="text-slate-500"><strong>Mục đích:</strong> Ngăn thiết bị nhảy liên công nghệ (IRAT Handover) khi sóng 4G bị suy hao ở các vùng biên hoặc lõi thang máy.</p>
+                        </div>
+
+                        <div class="border-l-4 border-amber-500 pl-3 py-1 space-y-1">
+                            <h4 class="font-bold text-slate-800">2. Band Lock (Khóa Băng Tần):</h4>
+                            <p><strong>Thao tác:</strong> Control Function -> Band Lock -> Chọn dải tần mong muốn (VD: Lock Band 3 - 1800 MHz cho MobiFone).</p>
+                            <p class="text-slate-500"><strong>Mục đích:</strong> Đo lường chính xác dung lượng và vùng phủ riêng biệt của từng dải tần xếp chồng.</p>
+                        </div>
+
+                        <div class="border-l-4 border-rose-500 pl-3 py-1 space-y-1">
+                            <h4 class="font-bold text-slate-800">3. EARFCN / PCI Lock (LTE) & UARFCN / SC Lock (3G):</h4>
+                            <p><strong>Thao tác:</strong> Control Function -> Cell Lock -> Nhập tần số tuyệt đối EARFCN và mã PCI ô vật lý của trạm cần đo.</p>
+                            <p class="text-slate-500"><strong>Mục đích:</strong> Bắt buộc khi làm nghiệm thu trạm đơn lẻ (Single Site Verification - SSV). Khóa cứng UE vào 1 cell duy nhất, chặn hoàn toàn hiện tượng Ping-pong Handover để đo Throughput cực đại.</p>
+                        </div>
+                    </div>
+                `
+            },
+            'indoor-pinpoint': {
+                title: '📍 Kỹ Thuật Đánh Dấu Tọa Độ Bản Đồ (Indoor Pinpointing)',
+                badge: 'Khảo sát tòa nhà',
+                content: `
+                    <div class="space-y-4 text-xs text-slate-700">
+                        <p>Trong môi trường không có tín hiệu GPS (như bên trong tòa nhà Ibuilding), TEMS Pocket sử dụng phương pháp gán tọa độ đồ họa:</p>
+
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                            <h4 class="font-bold text-slate-800">Phương Pháp Manual Pinpointing (Đánh dấu thủ công):</h4>
+                            <ol class="list-decimal list-inside space-y-1 text-slate-600">
+                                <li>Nạp bản vẽ mặt bằng dạng ảnh qua menu <strong>Action Map Set -> Load</strong>. Xác nhận đúng tầng.</li>
+                                <li>Bấm <strong>Start Pinpoint</strong> và đi bộ dọc tuyến đường khảo sát.</li>
+                                <li>Chạm vào màn hình (<strong>Add Pinpoint</strong>) tại điểm xuất phát, các điểm rẽ và điểm dừng. Phần mềm tự động rải dữ liệu vô tuyến bằng thuật toán nội suy tuyến tính giữa 2 điểm đánh dấu.</li>
+                            </ol>
+                            <p class="text-rose-600 font-semibold mt-1">⚠️ Cảnh báo: Tuyệt đối không vẽ đường đâm xuyên qua các bức tường vật lý hoặc lõi thang máy!</p>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-1">
+                            <h4 class="font-bold text-slate-800">Công Nghệ Auto-Pinpointing (Sensor Fusion):</h4>
+                            <p>Sử dụng cảm biến con quay hồi chuyển (gyroscope), gia tốc kế và hệ thống theo dõi bước chân trên điện thoại để tự động vẽ lộ trình theo thời gian thực mà không cần người đo liên tục chạm vào màn hình. Giảm 50% thời gian đo thực địa.</p>
+                        </div>
+                    </div>
+                `
+            },
+            'scripting-engine': {
+                title: '⚙️ Tự Động Hóa Kịch Bản Đo Kiểm (Scripting Engine)',
+                badge: 'Tự động hóa',
+                content: `
+                    <div class="space-y-4 text-xs text-slate-700">
+                        <p>Đảm bảo tính khách quan và khả năng lặp lại chuẩn xác cho bộ dữ liệu nghiệm thu:</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                <h4 class="font-bold text-telecom-700">Kịch Bản Dữ Liệu (Data Script):</h4>
+                                <ul class="list-disc list-inside space-y-1 text-slate-600 mt-1">
+                                    <li><strong>FTP Download/Upload:</strong> Cấu hình IP Server, User/Pass, Đường dẫn file. Thiết lập lệnh "Get" hoặc "Put".</li>
+                                    <li><strong>Parallel FTP:</strong> Cho phép mở nhiều luồng tải song song để đẩy băng thông đến giới hạn thiết kế.</li>
+                                    <li><strong>Guard Time (Thời gian chờ):</strong> Cài đặt khoảng nghỉ 5s giữa các lần tải để đưa thiết bị về trạng thái giải phóng tài nguyên.</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                <h4 class="font-bold text-telecom-700">Kịch Bản Thoại (Voice Script):</h4>
+                                <ul class="list-disc list-inside space-y-1 text-slate-600 mt-1">
+                                    <li><strong>MO/MT Call:</strong> Tự động gọi đến máy chủ hoặc đầu số 900. Duy trì chu kỳ cuộc gọi 120s rồi tự động ngắt.</li>
+                                    <li><strong>Chấm Điểm POLQA:</strong> Phân tích dải âm thanh thu được theo thời gian thực (AQM) để chấm điểm chất lượng thính giác người dùng.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            'session-export': {
+                title: '💾 Quản Lý Phiên Đo & Quy Trình Xuất File Log (.trp)',
+                badge: 'Quản lý dữ liệu',
+                content: `
+                    <div class="space-y-4 text-xs text-slate-700">
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                            <h4 class="font-bold text-slate-800">Quy Tắc Định Danh File (Naming Convention):</h4>
+                            <p>Tên file log ghi nhận phải tuân thủ chuẩn dự án để tránh nhầm lẫn khi nạp dữ liệu hàng loạt vào máy chủ hậu kỳ. Ví dụ:</p>
+                            <code class="block bg-slate-800 text-sky-300 p-2 rounded font-mono text-[11px]">
+                                [Tên Nhà Mạng]_[Công Nghệ]_[Tên Tòa Nhà]_[Tầng]_[Loại Kiểm Trả]_[Lần Đo]<br>
+                                Ví dụ: MobiFone_4G_Ibuilding_Floor15_FTP-DL_V01.trp
+                            </code>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-1">
+                            <h4 class="font-bold text-slate-800">Đường Dẫn Trích Xuất File Log Trên Điện Thoại:</h4>
+                            <p class="font-mono text-telecom-700 font-bold">TỆP -> Pocket -> Logfile -> Sessions -> Tìm tên file cần xuất</p>
+                            <p class="text-slate-600 mt-1">File có định dạng độc quyền <code class="font-mono text-slate-800 font-bold">.trp</code> chứa hàng triệu bản tin lớp vật lý. File này sẽ được nạp vào phần mềm **TEMS Discovery** trên PC để xuất báo cáo PDF nghiệm thu SAT.</p>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        function showFeatureDetail(featId) {
+            document.querySelectorAll('.feat-nav-btn').forEach(btn => {
+                btn.classList.remove('bg-telecom-50/50', 'border-telecom-50', 'text-telecom-900');
+                btn.classList.add('border-slate-100', 'text-slate-700');
+            });
+            const activeBtn = document.getElementById('feat-btn-' + featId);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-telecom-50/50', 'border-telecom-50', 'text-telecom-900');
+            }
+
+            const featData = featureDetailsData[featId];
+            const panel = document.getElementById('feature-detail-panel');
+            panel.innerHTML = `
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <h3 class="text-md font-bold text-telecom-900">${featData.title}</h3>
+                    <span class="text-xs bg-telecom-100 text-telecom-700 font-semibold px-2.5 py-1 rounded-full">${featData.badge}</span>
+                </div>
+                ${featData.content}
+            `;
+        }
+
+        // Diagnostics Data & Filter
+        const diagnosticsData = [
+            {
+                id: 'cov-hole',
+                category: 'coverage',
+                title: '⚠️ Lỗ Lõm Sóng (Coverage Hole)',
+                symptom: 'RSRP < -105 dBm (4G theo QĐ 61/QĐ-D01) hoặc RSCP < -95 dBm (3G). Điện thoại nhảy rớt mạng.',
+                rootCause: 'Vách bê tông dày, kính cản sóng Low-E, hoặc khoảng cách giữa các anten IBS quá xa.',
+                temsCheck: 'Màn hình Custom View -> Theo dõi tham số RSRP. Kiểm tra vị trí anten IBS gần nhất trên bản đồ.',
+                solution: 'Bổ sung anten phân tán IBS tại góc khuất; Điều chỉnh nâng công suất cổng chia RF Splitter.'
+            },
+            {
+                id: 'pilot-poll',
+                category: 'interference',
+                title: '⚡ Nhiễu Giao Thoa Sóng Lọt (Pilot Pollution)',
+                symptom: 'RSRP rất khỏe (-70 dBm) nhưng RSRQ < -12 dB, SINR < 0 dB. Mạng bị treo, không tải được data.',
+                rootCause: 'Tầng cao tòa nhà (tầng 15+) thu cùng lúc sóng từ nhiều trạm ngoài trời (Macro LOS) với cường độ ngang nhau.',
+                temsCheck: 'TEMS Logfile -> Đồ thị RSRQ giảm sâu, nhiều PCI hiển thị mức sóng tương đương nhau.',
+                solution: 'Tăng công suất phát anten IBS trong nhà để tạo Cell thống trị (Dominant Cell), đè sóng ngoài trời ≤ -105 dBm.'
+            },
+            {
+                id: 'ping-pong',
+                category: 'handover',
+                title: '🔄 Ping-pong Handover Liên Tục',
+                symptom: 'Đứng yên một chỗ nhưng bản tin Event A3 nổ liên tục. Tốc độ tải giật cục, dễ rớt cuộc gọi.',
+                rootCause: 'Không có ô thống trị, mức sóng giữa 2 cell chênh lệch < 3 dB khiến UE liên tục bị kích chuyển giao.',
+                temsCheck: 'Layer 3 Messages -> Xuất hiện liên tục các bản tin Measurement Report và RRC Connection Reconfiguration.',
+                solution: 'Tùy chỉnh tham số Handover Margin / Hysteresis trên eNodeB hoặc dùng PCI Lock cô lập cell gây nhiễu.'
+            },
+            {
+                id: 'rtwp-pim',
+                category: 'rtwp',
+                title: '📈 Nhiễu Đường Lên RTWP Cao & Nhiễu PIM',
+                symptom: 'RTWP trạm dâng vượt -95 dBm. Người dùng gọi đi rớt cuộc gọi, Cell Breathing co hẹp vùng phủ.',
+                rootCause: 'Sóng hài bậc 3 (IM3) do 2 sóng mang trộn lẫn qua đầu nối connector bị oxy hóa hoặc lỏng lẻo.',
+                temsCheck: 'Giao diện RF-Over-CPRI của trạm báo RTWP vọt cao (> -95 dBm). Đo kiểm PIM tại hiện trường.',
+                solution: 'Dùng cờ lê lực siết chặt connector, thay thế các bộ chia/anten kém chất lượng bằng chuẩn Low-PIM (-150 dBc).'
+            },
+            {
+                id: 'cqi-mcs-drop',
+                category: 'throughput',
+                title: '📉 Tốc Độ Tải Thấp (Không Đạt Chuẩn QĐ 61/QĐ-D01: DL ≥ 15Mbps, UL ≥ 3Mbps)',
+                symptom: 'Cột sóng đầy vạch nhưng tốc độ tải Downlink chỉ đạt vài Mbps, không lên được 4G Advanced.',
+                rootCause: 'SINR kém làm chỉ báo CQI hạ xuống mức 1-4. eNodeB buộc phải hạ điều chế từ 256-QAM xuống QPSK.',
+                temsCheck: 'TEMS Dedicated View -> Kiểm tra thông số Modulation (hiển thị QPSK thay vì 64-QAM/256-QAM).',
+                solution: 'Xử lý triệt để nguồn gây nhiễu để nâng chỉ số SINR > 15 dB, từ đó hệ thống tự động mở lại điều chế bậc cao.'
+            }
+        ];
+
+        function renderDiagnostics(filter = 'all') {
+            const container = document.getElementById('diagnostics-cards-container');
+            container.innerHTML = '';
+
+            const filtered = filter === 'all' 
+                ? diagnosticsData 
+                : diagnosticsData.filter(d => d.category === filter);
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3';
+                card.innerHTML = `
+                    <h3 class="font-bold text-sm text-telecom-900 flex items-center justify-between border-b pb-2">
+                        <span>${item.title}</span>
+                    </h3>
+                    
+                    <div class="space-y-2 text-xs">
+                        <div>
+                            <span class="font-bold text-rose-600">🚨 Dấu Hiệu:</span>
+                            <p class="text-slate-700 mt-0.5 bg-rose-50/50 p-2 rounded border border-rose-100">${item.symptom}</p>
+                        </div>
+                        <div>
+                            <span class="font-bold text-amber-700">🔎 Nguyên Nhân Gốc Rễ:</span>
+                            <p class="text-slate-700 mt-0.5">${item.rootCause}</p>
+                        </div>
+                        <div>
+                            <span class="font-bold text-telecom-700">📱 Nhận Biết Trên TEMS:</span>
+                            <p class="text-slate-700 mt-0.5 font-mono text-[11px] bg-slate-50 p-1.5 rounded">${item.temsCheck}</p>
+                        </div>
+                        <div>
+                            <span class="font-bold text-emerald-700">🛠️ Phương Án Xử Lý:</span>
+                            <p class="text-slate-700 mt-0.5 bg-emerald-50/50 p-2 rounded border border-emerald-100">${item.solution}</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterDiagnostics(cat) {
+            document.querySelectorAll('.diag-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-telecom-600', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-slate-100', 'text-slate-700');
+            });
+            event.target.classList.remove('bg-slate-100', 'text-slate-700');
+            event.target.classList.add('bg-telecom-600', 'text-white', 'shadow-sm');
+            renderDiagnostics(cat);
+        }
+
+        // Technical standards table data
+        const standardTableData = {
+            '4g': [
+                { stt: '3.1', title: 'Số mẫu đo cường độ tín hiệu 4G LTE RSRP', threshold: 'RSRP ≥ -105 dBm', method: 'Log file TEMS Pocket', note: 'Đạt > 98% tổng số mẫu' },
+                { stt: '3.2', title: 'Số mẫu đo chất lượng tín hiệu 4G LTE RSRQ', threshold: 'RSRQ ≥ -12 dB', method: 'Log file TEMS Pocket', note: 'Đạt > 98% tổng số mẫu' },
+                { stt: '3.3', title: 'Mức nhiễu đường lên Uplink Noise', threshold: 'Nhiễu UL ≤ -95 dBm', method: 'Số liệu OMC Hệ thống', note: 'Bắt buộc duy trì liên tục' },
+                { stt: '3.4', title: 'Mức thu tín hiệu ngoài trời lọt vào tòa nhà', threshold: 'Mức thu ≤ -105 dBm', method: 'Log file TEMS Pocket', note: 'Đảm bảo độ cách ly sóng IBS' },
+                { stt: '3.5', title: 'Độ trễ gói tin IP Latency 4G Downlink', threshold: 'IP Latency DL ≤ 20ms', method: 'Log file TEMS Pocket', note: 'Đạt > 95% tổng số mẫu' },
+                { stt: '3.6', title: 'Thời gian quay trở lại 4G (Time to Return)', threshold: 'Time to Return < 3s', method: 'Log file TEMS Pocket', note: 'Đạt > 95% tổng số mẫu' },
+                { stt: '3.7', title: 'Tỷ lệ thiết lập cuộc gọi CSFB thành công', threshold: 'Tỷ lệ CSFB ≥ 99%', method: 'Số liệu OMC / Log file', note: 'Đo kiểm kết nối thoại CSFB' },
+                { stt: '3.8', title: 'Thời gian thiết lập CSFB (CSFB Setup time)', threshold: 'Setup time < 6s', method: 'Log file TEMS Pocket', note: 'Đạt > 95% tổng số mẫu' },
+                { stt: '3.9', title: 'Tỷ lệ khởi tạo thiết lập E-RAB thành công', threshold: 'E-RAB SR4G ≥ 98%', method: 'Số liệu OMC Hệ thống', note: 'Chỉ tiêu chất lượng dữ liệu 4G' },
+                { stt: '3.10', title: 'Tốc độ dữ liệu Downlink (DL) trung bình', threshold: 'Tốc độ DL ≥ 15 Mbps', method: 'Log file TEMS (FTP DL)', note: 'Đo kiểm tại các khu vực phủ sóng' },
+                { stt: '3.11', title: 'Tốc độ dữ liệu Uplink (UL) trung bình', threshold: 'Tốc độ UL ≥ 3 Mbps', method: 'Log file TEMS (FTP UL)', note: 'Đo kiểm tại các khu vực phủ sóng' },
+            ],
+            '5g': [
+                { stt: '4.1', title: 'Số mẫu đo cường độ tín hiệu 5G NR RSRP', threshold: 'RSRP ≥ -110 dBm', method: 'Log file TEMS Pocket', note: 'Đạt > 98% tổng số mẫu' },
+                { stt: '4.2', title: 'Số mẫu đo chất lượng tín hiệu 5G NR RSRQ', threshold: 'RSRQ ≥ -15 dB', method: 'Log file TEMS Pocket', note: 'Đạt > 98% tổng số mẫu' },
+                { stt: '4.3', title: 'Mức nhiễu đường lên Uplink Noise 5G', threshold: 'Nhiễu UL ≤ -95 dBm', method: 'Log file TEMS / OMC', note: 'Đảm bảo nền nhiễu trạm đáy' },
+                { stt: '4.4', title: 'Mức thu tín hiệu ngoài trời lọt vào tòa nhà (5G)', threshold: 'Mức thu ≤ -110 dBm', method: 'Log file TEMS Pocket', note: 'Tránh nhiễu sóng từ Macro' },
+                { stt: '4.5', title: 'Độ trễ kết nối NR Latency', threshold: 'NR Latency ≤ 50ms', method: 'Log file TEMS Pocket', note: 'Đạt > 95% tổng số mẫu' },
+                { stt: '4.6', title: 'Tỷ lệ thiết lập kết nối giữa eNB và gNB (EN-DC)', threshold: 'Tỷ lệ thành công ≥ 99.25%', method: 'Số liệu OMC Hệ thống', note: 'Áp dụng cho cấu hình NSA 5G' },
+                { stt: '4.7', title: 'Tốc độ DL trung bình mức User (5G)', threshold: 'Tốc độ DL ≥ 100 Mbps', method: 'Log file TEMS (FTP DL)', note: 'Đo kiểm tại khu vực có 5G' },
+                { stt: '4.8', title: 'Tốc độ UL trung bình mức User (5G)', threshold: 'Tốc độ UL ≥ 30 Mbps', method: 'Log file TEMS (FTP UL)', note: 'Đo kiểm tại khu vực có 5G' },
+            ],
+            '3g': [
+                { stt: '2.1', title: 'Số mẫu đo tỷ lệ chất lượng CPICH Ec/No', threshold: 'CPICH Ec/No ≥ -12 dB', method: 'Log file TEMS Pocket', note: 'Đạt > 98% tổng số mẫu' },
+                { stt: '2.2', title: 'Số mẫu đo cường độ tín hiệu CPICH RSCP', threshold: 'CPICH RSCP ≥ -95 dBm', method: 'Log file TEMS Pocket', note: 'Đạt > 98% tổng số mẫu' },
+                { stt: '2.3', title: 'Nhiễu Uplink trạm 3G (RTWP)', threshold: 'Nhiễu UL ≤ -95 dBm', method: 'Số liệu OMC Hệ thống', note: 'Nếu dâng cao gây co cell' },
+                { stt: '2.4', title: 'Mức thu sóng ngoài tòa nhà lọt vào', threshold: 'Mức thu ≤ -95 dBm', method: 'Log file TEMS Pocket', note: 'Kiểm tra độ cách ly IBS' },
+                { stt: '2.5', title: 'Thời gian trễ truyền vòng Round Trip Time (RTT)', threshold: 'PSD_RTT ≤ 100ms', method: 'Log file TEMS Pocket', note: 'Đạt > 95% tổng số mẫu' },
+                { stt: '2.6', title: 'Chất lượng thoại cuộc gọi (Chỉ số MOS)', threshold: 'Chỉ số MOS > 3.5', method: 'Log file thoại POLQA', note: 'Chấm điểm âm thanh thoại' },
+                { stt: '2.7', title: 'Tốc độ DL trung bình 3G', threshold: 'Tốc độ DL ≥ 2 Mbps', method: 'Log file TEMS (Data)', note: 'Đo kiểm dữ liệu 3G' },
+                { stt: '2.8', title: 'Tốc độ UL trung bình 3G', threshold: 'Tốc độ UL ≥ 200 Kbps', method: 'Log file TEMS (Data)', note: 'Đo kiểm dữ liệu 3G' },
+                { stt: '2.9', title: 'Tỷ lệ thiết lập cuộc gọi thoại CSSR 3G', threshold: 'CSSR3G ≥ 98%', method: 'Số liệu OMC Hệ thống', note: 'Chỉ tiêu mạng lưới' },
+                { stt: '2.10', title: 'Tỷ lệ rớt cuộc gọi thoại CDR 3G', threshold: 'CDR3G ≤ 0.85%', method: 'Số liệu OMC Hệ thống', note: 'Chỉ tiêu mạng lưới' },
+                { stt: '2.11', title: 'Tỷ lệ thiết lập phiên data PASR 3G', threshold: 'PASR3G ≥ 98%', method: 'Số liệu OMC Hệ thống', note: 'Chỉ tiêu mạng lưới' },
+                { stt: '2.12', title: 'Tỷ lệ rớt phiên data 3G', threshold: 'Rớt Data 3G ≤ 1.5%', method: 'Số liệu OMC Hệ thống', note: 'Chỉ tiêu mạng lưới' },
+            ],
+            'antenna': [
+                { stt: 'Mục II.1', title: 'Mức công suất đo dưới Anten - Công nghệ 3G', threshold: 'RSCP ≥ -60 dBm, Ec/No ≥ -4dB', method: 'Máy đo vô tuyến / TEMS', note: 'Kiểm tra bức xạ từng anten' },
+                { stt: 'Mục II.2', title: 'Mức công suất đo dưới Anten - Công nghệ 4G', threshold: 'RSRP ≥ -60 dBm, RSRQ ≥ -4dB', method: 'Máy đo vô tuyến / TEMS', note: 'Kiểm tra bức xạ từng anten' },
+                { stt: 'Mục II.3', title: 'Mức công suất đo dưới Anten - Công nghệ 5G', threshold: 'RSRP ≥ -65 dBm, RSRQ ≥ -5dB', method: 'Máy đo vô tuyến / TEMS', note: 'Kiểm tra bức xạ từng anten' },
+                { stt: 'Mục II.4', title: 'Chuẩn PIM điều chế thụ động các phần tử DAS', threshold: 'IM3 ≤ -150 dBc (với 2 x 20W)', method: 'Máy đo PIM Site Master', note: 'Kiểm tra cổng chia/bộ ghép' },
+                { stt: 'Mục I.5.3', title: 'An toàn phát xạ vô tuyến (HAS RF)', threshold: 'Tuân thủ tiêu chuẩn ICNIRP 1998', method: 'Đánh giá an toàn bức xạ', note: 'Bảo vệ sức khỏe người dùng' },
+            ],
+            'infra': [
+                { stt: 'IV.1', title: 'Diện tích & Điều kiện Phòng máy', threshold: 'Sạch sẽ, không ẩm mốc, cửa có khóa bảo vệ', method: 'Kiểm tra thực tế hiện trường', note: 'Biên bản nghiệm thu phòng máy' },
+                { stt: 'IV.2', title: 'Nhiệt độ phòng máy thiết bị', threshold: 'Duy trì ổn định từ 25°C ~ 27°C', method: 'Nhiệt kế / Cảm biến OMC', note: 'Bắt buộc điều hòa hoạt động' },
+                { stt: 'IV.3', title: 'Hệ thống cảnh báo sự cố', threshold: 'Đầy đủ cảnh báo đột nhập, cháy, khói, nhiệt độ', method: 'Đấu nối về hệ thống OMC', note: 'Có ắc quy dự phòng' },
+                { stt: 'IV.4', title: 'Nguồn cấp điện & Chiếu sáng', threshold: 'Nguồn điện 24/24h, có nguồn dự phòng (UPS/Ắc quy)', method: 'Kiểm tra tủ phân phối AC', note: 'Đủ ánh sáng thao tác' },
+                { stt: 'IV.5', title: 'Hệ thống tiếp đất bảo vệ & công tác', threshold: 'Điện trở tiếp đất R_đất ≤ 10 Ω', method: 'Máy đo điện trở tiếp đất', note: 'Đấu nối đúng quy chuẩn' },
+                { stt: 'IV.6', title: 'Trang bị Phòng cháy chữa cháy (PCCC)', threshold: 'Biển tiêu lệnh + Tối thiểu 02 bình khí MT3', method: 'Kiểm tra thiết bị PCCC', note: 'Còn hạn sử dụng' },
+            ]
+        };
+
+        function switchStandardTab(catKey) {
+            document.querySelectorAll('.std-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-telecom-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-700');
+            });
+            const activeBtn = document.getElementById('std-tab-' + catKey);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-slate-700');
+                activeBtn.classList.add('bg-telecom-600', 'text-white', 'shadow-sm');
+            }
+
+            const tbody = document.getElementById('standard-table-body');
+            tbody.innerHTML = '';
+
+            const rowsData = standardTableData[catKey] || [];
+            rowsData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition-colors';
+                tr.innerHTML = `
+                    <td class="p-3 border-r border-slate-200 text-center font-mono font-bold text-slate-500">${row.stt}</td>
+                    <td class="p-3 border-r border-slate-200 font-medium text-slate-800">${row.title}</td>
+                    <td class="p-3 border-r border-slate-200 font-bold text-telecom-700 bg-telecom-50/50">${row.threshold}</td>
+                    <td class="p-3 border-r border-slate-200 text-slate-600 font-mono text-[11px]">${row.method}</td>
+                    <td class="p-3 text-slate-500 text-[11px]">${row.note}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Simulator & Chart
+        let throughputChartInstance = null;
+
+        function initThroughputChart() {
+            const ctx = document.getElementById('throughputChart').getContext('2d');
+            throughputChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['-110 dBm', '-100 dBm', '-90 dBm', '-80 dBm', '-70 dBm', '-60 dBm'],
+                    datasets: [{
+                        label: 'Tốc Độ Tải Ước Tính (Mbps)',
+                        data: [5, 15, 45, 75, 110, 130],
+                        borderColor: '#0284c7',
+                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Throughput (Mbps)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Mức Sóng RSRP (dBm)' }
+                        }
+                    }
+                }
+            });
+            updateSimulation();
+        }
+
+        function updateSimulation() {
+            const rsrp = parseInt(document.getElementById('input-rsrp').value);
+            const sinr = parseInt(document.getElementById('input-sinr').value);
+            const pimLevel = parseInt(document.getElementById('input-pim-level').value);
+
+            document.getElementById('val-rsrp').innerText = rsrp + ' dBm';
+            document.getElementById('val-sinr').innerText = sinr + ' dB';
+            
+            const pimLabel = document.getElementById('val-pim-level');
+            if(pimLevel < 5) pimLabel.innerText = pimLevel + ' dB (Thường)';
+            else if(pimLevel < 15) pimLabel.innerText = pimLevel + ' dB (Cảnh báo)';
+            else pimLabel.innerText = pimLevel + ' dB (Nghiêm trọng)';
+
+            const effectiveSINR = sinr - (pimLevel * 0.8);
+
+            let cqi = Math.round((effectiveSINR + 10) / 2.5);
+            cqi = Math.max(1, Math.min(15, cqi));
+
+            let mcs = 'QPSK';
+            if (cqi >= 10) mcs = '256-QAM';
+            else if (cqi >= 7) mcs = '64-QAM';
+            else if (cqi >= 4) mcs = '16-QAM';
+
+            let baseTp = Math.max(1, (rsrp + 120) * 1.8);
+            let sinrMultiplier = Math.max(0.1, (effectiveSINR + 5) / 25);
+            let throughput = Math.round(baseTp * sinrMultiplier);
+            throughput = Math.max(1, Math.min(150, throughput));
+
+            document.getElementById('out-cqi').innerText = cqi + ' / 15';
+            document.getElementById('out-mcs').innerText = mcs;
+            document.getElementById('out-tp').innerText = throughput + ' Mbps';
+
+            if(throughputChartInstance) {
+                const simulatedData = [-110, -100, -90, -80, -70, -60].map(r => {
+                    let b = (r + 120) * 1.8;
+                    let val = Math.round(b * sinrMultiplier);
+                    return Math.max(0, Math.min(150, val));
+                });
+                throughputChartInstance.data.datasets[0].data = simulatedData;
+                throughputChartInstance.update();
+            }
+        }
+
+        function calculatePIM() {
+            const f1 = parseFloat(document.getElementById('pim-f1').value);
+            const f2 = parseFloat(document.getElementById('pim-f2').value);
+            const bandVal = document.getElementById('pim-ul-band').value;
+            const [ulMin, ulMax] = bandVal.split('-').map(Number);
+
+            if (isNaN(f1) || isNaN(f2)) return;
+
+            const im3_1 = (2 * f1) - f2;
+            const im3_2 = (2 * f2) - f1;
+
+            const hits1 = im3_1 >= ulMin && im3_1 <= ulMax;
+            const hits2 = im3_2 >= ulMin && im3_2 <= ulMax;
+
+            const box = document.getElementById('pim-results-box');
+            
+            let statusText = '';
+            if (hits1 || hits2) {
+                box.className = 'p-4 rounded-lg bg-rose-50 border border-rose-300 text-xs space-y-2 text-rose-900';
+                statusText = `<span class="font-bold text-rose-700">🚨 NGUY HIỂM: Sóng Hài PIM Rơi Trực Tiếp Vào Dải Uplink!</span>`;
+            } else {
+                box.className = 'p-4 rounded-lg bg-emerald-50 border border-emerald-300 text-xs space-y-2 text-emerald-900';
+                statusText = `<span class="font-bold text-emerald-700">✅ AN TOÀN: Tần Số IM3 Nằm Ngoài Dải Uplink Kiểm Tra</span>`;
+            }
+
+            box.innerHTML = `
+                ${statusText}
+                <div class="grid grid-cols-2 gap-2 mt-2 font-mono">
+                    <div class="bg-white/80 p-2 rounded border">
+                        <span>IM3 (2*f1 - f2):</span>
+                        <strong class="block text-sm ${hits1 ? 'text-rose-600' : 'text-slate-800'}">${im3_1.toFixed(2)} MHz</strong>
+                    </div>
+                    <div class="bg-white/80 p-2 rounded border">
+                        <span>IM3 (2*f2 - f1):</span>
+                        <strong class="block text-sm ${hits2 ? 'text-rose-600' : 'text-slate-800'}">${im3_2.toFixed(2)} MHz</strong>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-600 mt-1">Dải tần Uplink đang đối chiếu: <strong>${ulMin} MHz - ${ulMax} MHz</strong>.</p>
+            `;
+        }
+
+        // TEMS Interference calculation
+        function calculateTemsInterference() {
+            const rsrp = parseFloat(document.getElementById('tems-rsrp').value) || -85;
+            const rssi = parseFloat(document.getElementById('tems-rssi').value) || -62;
+            const rsrq = parseFloat(document.getElementById('tems-rsrq').value) || -9;
+            const sinr = parseFloat(document.getElementById('tems-sinr').value) || 18;
+            const rtwp = parseFloat(document.getElementById('tems-rtwp').value) || -102;
+            const rscp = parseFloat(document.getElementById('tems-rscp').value) || -78;
+            const ecno = parseFloat(document.getElementById('tems-ecno').value) || -6;
+
+            const noisePowerPerSC = rsrp - sinr;
+            document.getElementById('res-4g-noise-power').innerText = noisePowerPerSC.toFixed(1) + ' dBm/SC';
+            document.getElementById('res-4g-snr-calc').innerText = sinr.toFixed(1) + ' dB';
+
+            const is4gPass = (rsrp >= -105) && (rsrq >= -12);
+            const badge4g = document.getElementById('res-4g-qd61-badge');
+            if (is4gPass) {
+                badge4g.className = 'px-2 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 font-bold';
+                badge4g.innerText = 'ĐẠT QĐ 61';
+            } else {
+                badge4g.className = 'px-2 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 font-bold';
+                badge4g.innerText = 'KHÔNG ĐẠT QĐ 61';
+            }
+
+            const qualElem = document.getElementById('res-4g-quality');
+            if(sinr >= 15) {
+                qualElem.innerText = 'Tuyệt vời (256-QAM / 64-QAM)';
+                qualElem.className = 'text-emerald-600 font-bold';
+            } else if(sinr >= 5) {
+                qualElem.innerText = 'Khá (16-QAM)';
+                qualElem.className = 'text-telecom-600 font-bold';
+            } else if(sinr >= 0) {
+                qualElem.innerText = 'Kém (Nhiễu lọt / Pilot Pollution)';
+                qualElem.className = 'text-amber-600 font-bold';
+            } else {
+                qualElem.innerText = 'Rất Tệ (Rớt cuộc gọi / Drop Data)';
+                qualElem.className = 'text-rose-600 font-bold';
+            }
+
+            const nominalRTWP = -108;
+            const noiseRise = Math.max(0, rtwp - nominalRTWP);
+            document.getElementById('res-3g-noise-rise').innerText = noiseRise.toFixed(1) + ' dB';
+
+            const cellShrinkage = (1 - Math.pow(10, -noiseRise / 20)) * 100;
+            document.getElementById('res-3g-shrinkage').innerText = cellShrinkage.toFixed(1) + '%';
+
+            const capLossElem = document.getElementById('res-3g-capacity-loss');
+            if(noiseRise <= 3) {
+                capLossElem.innerText = 'Tốt (Tải nhẹ)';
+                capLossElem.className = 'text-emerald-600 font-bold';
+            } else if(noiseRise <= 7) {
+                capLossElem.innerText = 'Bình thường (< 20% Cell Shrink)';
+                capLossElem.className = 'text-amber-600 font-bold';
+            } else {
+                capLossElem.innerText = 'Co hẹp nặng (> 30% Cell Shrink)';
+                capLossElem.className = 'text-rose-600 font-bold';
+            }
+
+            const is3gPass = (rtwp <= -95) && (rscp >= -95) && (ecno >= -12);
+            const badge3g = document.getElementById('res-3g-qd61-badge');
+            if (is3gPass) {
+                badge3g.className = 'px-2 py-0.5 rounded text-[10px] bg-emerald-100 text-emerald-800 font-bold';
+                badge3g.innerText = 'ĐẠT QĐ 61';
+            } else {
+                badge3g.className = 'px-2 py-0.5 rounded text-[10px] bg-rose-100 text-rose-800 font-bold';
+                badge3g.innerText = 'KHÔNG ĐẠT QĐ 61';
+            }
+
+            const diagText = document.getElementById('res-diagnosis-text');
+            let diagSummary = [];
+
+            if(rtwp > -95) {
+                diagSummary.push(`🚨 <strong class="text-rose-600">Nhiễu Uplink RTWP vượt ngưỡng (${rtwp} dBm > -95 dBm):</strong> Trạm bị dâng nhiễu đường lên do PIM hoặc nhiễu ngoại vi.`);
+            }
+
+            if(rsrp >= -90 && sinr < 5) {
+                diagSummary.push(`⚡ <strong class="text-amber-600">Nhiễu giao thoa lọt sóng (Pilot Pollution):</strong> RSRP khỏe (${rsrp} dBm) nhưng SINR quá thấp (${sinr} dB).`);
+            }
+
+            if(rsrp < -105) {
+                diagSummary.push(`⚠️ <strong class="text-rose-600">Lỗ lõm sóng 4G:</strong> RSRP = ${rsrp} dBm vi phạm chỉ tiêu QĐ 61 (yêu cầu &ge; -105 dBm).`);
+            }
+
+            if(diagSummary.length === 0) {
+                diagText.innerHTML = `✅ <span class="text-emerald-700 font-bold">Mạng vô tuyến hoạt động hoàn hảo!</span> Tất cả chỉ số đều đáp ứng tiêu chuẩn QĐ 61/QĐ-D01 MobiFone 2026.`;
+            } else {
+                diagText.innerHTML = diagSummary.join('<br>');
+            }
+        }
+
+        function loadTemsPreset(presetType) {
+            if(presetType === 'clean') {
+                document.getElementById('tems-rsrp').value = -75;
+                document.getElementById('tems-rssi').value = -55;
+                document.getElementById('tems-rsrq').value = -7;
+                document.getElementById('tems-sinr').value = 22;
+                document.getElementById('tems-rtwp').value = -104;
+                document.getElementById('tems-rscp').value = -70;
+                document.getElementById('tems-ecno').value = -4;
+            } else if(presetType === 'pilot') {
+                document.getElementById('tems-rsrp').value = -78;
+                document.getElementById('tems-rssi').value = -48;
+                document.getElementById('tems-rsrq').value = -15;
+                document.getElementById('tems-sinr').value = 1;
+                document.getElementById('tems-rtwp').value = -102;
+                document.getElementById('tems-rscp').value = -75;
+                document.getElementById('tems-ecno').value = -14;
+            } else if(presetType === 'pim') {
+                document.getElementById('tems-rsrp').value = -88;
+                document.getElementById('tems-rssi').value = -60;
+                document.getElementById('tems-rsrq').value = -13;
+                document.getElementById('tems-sinr').value = 3;
+                document.getElementById('tems-rtwp').value = -88;
+                document.getElementById('tems-rscp').value = -85;
+                document.getElementById('tems-ecno').value = -11;
+            }
+            calculateTemsInterference();
+        }
+
+        function togglePimGuideModal() {
+            const modal = document.getElementById('pim-guide-modal');
+            if (modal) {
+                modal.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            showFeatureDetail('mode-idle-ded');
+            renderDiagnostics('all');
+            switchStandardTab('4g');
+            calculatePIM();
+            calculateTemsInterference();
+        });
+    </script>
+</body>
+</html>
